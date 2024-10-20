@@ -1,7 +1,7 @@
 # Nautilus Extension: Copy File Contents
 
 Easily copy the contents of a text file! 😄  
-![Screenshot showing the option in the right-click menu](https://github.com/user-attachments/assets/2b5fb209-3c24-48ba-9f80-49702d5f720b)
+![Screenshot showing the option in the right-click menu](https://github.com/user-attachments/assets/7fb749a3-25ee-4eae-b644-00c07510c11d)
 
 ## Why?
 
