@@ -1,9 +1,32 @@
-import gi
+import mimetypes
+import os
 import subprocess
+import sys
+from urllib.parse import unquote
+
+import gi
 gi.require_version('Nautilus', '4.0')
 from gi.repository import Nautilus, GObject, Gtk, Gdk, Gio
-import os
-from urllib.parse import unquote
+
+# mimetypes.guess_type with file path is deprecated for python>=3.13
+if sys.version_info.major == 3 and sys.version_info.minor < 13:
+    mimetypes.guess_file_type = mimetypes.guess_type
+
+# Use magic if available to get MIME type from file content
+try:
+    import magic
+    magic_mime = magic.open(magic.MAGIC_MIME_TYPE | magic.MAGIC_SYMLINK)
+    magic_mime.load()
+except ModuleNotFoundError:
+    magic_mime = None
+
+
+def get_mime_type(file_path):
+    """Return the MIME type of the specified file."""
+    if magic_mime is None:
+        return mimetypes.guess_file_type(file_path)[0] or 'unknown'
+    return magic_mime.file(file_path)
+
 
 class CopyFileContents(GObject.GObject, Nautilus.MenuProvider):
     def __init__(self):
@@ -12,16 +35,6 @@ class CopyFileContents(GObject.GObject, Nautilus.MenuProvider):
     def is_supported_mime_type(self, mime_type):
         white_list = ["application/json", "application/xml", "application/x-shellscript", "application/x-tiled-tsx", "application/vnd.dart", "application/toml", "application/x-gtk-builder"]
         return mime_type.startswith("text/") or mime_type in white_list
-
-    def get_mime_type(self, file_path):
-        """Return the MIME type of the specified file."""
-        file = Gio.File.new_for_path(file_path)
-        try:
-            info = file.query_info('*', Gio.FileQueryInfoFlags.NONE, None)
-            return info.get_content_type()
-        except Exception as e:
-            print(f"Error retrieving MIME type for '{file_path}': {e}")
-            return None
 
     def send_notification(self, title, message):
         """Send a notification with the specified title and message."""
@@ -39,7 +52,7 @@ class CopyFileContents(GObject.GObject, Nautilus.MenuProvider):
         if len(files) == 1:
             file_info = files[0]
             file_path = unquote(file_info.get_uri()[7:])
-            mime_type = self.get_mime_type(file_path)  # Get MIME type
+            mime_type = get_mime_type(file_path)  # Get MIME type
 
             if self.is_supported_mime_type(mime_type):
                 menu_item = Nautilus.MenuItem(
