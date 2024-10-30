@@ -1,10 +1,11 @@
 PREFIX ?= $(HOME)/.local
 INSTALL_PATH = $(DESTDIR)$(PREFIX)/share/nautilus-python/extensions
-MODULES_PREFIX = nautilus_copy_
-all:
+MODULES_NAME = nautilus_copy_file_contents
 
-install:   $(patsubst $(MODULES_PREFIX)%.py,install-%,  $(notdir $(wildcard src/$(MODULES_PREFIX)*.py)))
-uninstall: $(patsubst $(MODULES_PREFIX)%.py,uninstall-%,$(notdir $(wildcard $(INSTALL_PATH)/$(MODULES_PREFIX)*.py)))
+all: pycache
+
+install:   $(patsubst $(MODULES_NAME).py,install-%,  $(notdir $(wildcard src/$(MODULES_NAME).py)))
+uninstall: $(patsubst $(MODULES_NAME).py,uninstall-%,$(notdir $(wildcard $(INSTALL_PATH)/$(MODULES_NAME).py)))
 
 pycache:
 	python -m compileall src
@@ -14,9 +15,10 @@ clean:
 
 install-%:
 	install -dm755 $(INSTALL_PATH)/__pycache__/
-	install -m755 src/$(MODULES_PREFIX)$*.py $(INSTALL_PATH)/
-	test -f src/__pycache__/$(MODULES_PREFIX)$*.*.pyc && install -m755 src/__pycache__/$(MODULES_PREFIX)$*.*.pyc $(INSTALL_PATH)/__pycache__/ || true
+	install -m755 src/$(MODULES_NAME).py $(INSTALL_PATH)/
+	test -f src/__pycache__/$(MODULES_NAME).*.pyc && install -m755 src/__pycache__/$(MODULES_NAME).*.pyc $(INSTALL_PATH)/__pycache__/ || true
 
 uninstall-%:
-	rm $(INSTALL_PATH)/$(MODULES_PREFIX)$*.py || true
-	rm $(INSTALL_PATH)/__pycache__/$(MODULES_PREFIX)$*.*.pyc || true
+	rm -f $(INSTALL_PATH)/$(MODULES_NAME).py
+	rm -f $(INSTALL_PATH)/__pycache__/$(MODULES_NAME).*.pyc
+	rmdir -p --ignore-fail-on-non-empty $(INSTALL_PATH)/__pycache__
