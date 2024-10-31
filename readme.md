@@ -14,6 +14,8 @@ developing Nautilus extensions! 🚀
 
 You'll need to install [nautilus-python](https://gitlab.gnome.org/GNOME/nautilus-python) for your distribution. 🙂
 
+Optionally, for more advanced file type detection you may install [python-magic](https://github.com/ahupp/python-magic).
+
 ## Installation
 
 ```bash
@@ -35,8 +37,7 @@ make uninstall
 or manually:
 
 ```bash
-cd $HOME/.local/share/nautilus-python/extensions/ &&
-rm nautilus_copy_file_contents.py
+rm $HOME/.local/share/nautilus-python/extensions/nautilus_copy_file_contents.py
 ```
 
 ## Development/Debugging
