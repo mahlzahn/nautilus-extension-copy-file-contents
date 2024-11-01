@@ -49,9 +49,8 @@ class CopyFileContents(GObject.GObject, Nautilus.MenuProvider):
 
     def get_file_items(self, files):
         """Return menu items for supported file types."""
-        menu_items = []
-
-        for file_info in files:
+        if len(files) == 1:
+            file_info = files[0]
             file_path = unquote(file_info.get_uri()[7:])
             mime_type = get_mime_type(file_path)  # Get MIME type
 
@@ -61,26 +60,22 @@ class CopyFileContents(GObject.GObject, Nautilus.MenuProvider):
                     label='Copy File Content',
                     tip='Reads the content of the selected file',
                 )
-                menu_item.connect('activate', self.copy_file_content, files)
-                menu_items.append(menu_item)
+                menu_item.connect('activate', self.copy_file_content, file_path)
+                return [menu_item]
+        return []
 
-        return menu_items
-
-    def copy_file_content(self, menu, files):
-        """Read the content of the selected files and copy it to the clipboard."""
-        for file_info in files:
-            file_path = unquote(file_info.get_uri()[7:])
-            if os.path.isfile(file_path):
-                try:
-                    with open(file_path, 'r') as f:
-                        content = f.read()
-                        self.copy_to_clipboard(content)  # Copy content to clipboard
-                        file_name = os.path.basename(file_path)
-                        self.send_notification("Content Copied", f"The content of the file '{file_name}' has been copied successfully.")
-                        
-                except Exception as e:
+    def copy_file_content(self, menu, file_path):
+        """Read the content of the selected file and copy it to the clipboard."""
+        if os.path.isfile(file_path):
+            try:
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    self.copy_to_clipboard(content)  # Copy content to clipboard
                     file_name = os.path.basename(file_path)
-                    self.send_notification(f"Cannot read the contents of '{file_name}'", str(e))
-                    print(f"Error reading file '{file_name}': {e}")
-            else:
-                print(f"{file_path} is not a valid file.")
+                    self.send_notification("Content Copied", f"The content of the file '{file_name}' has been copied successfully.")
+            except Exception as e:
+                file_name = os.path.basename(file_path)
+                self.send_notification(f"Cannot read the contents of '{file_name}'", str(e))
+                print(f"Error reading file '{file_name}': {e}")
+        else:
+            print(f"{file_path} is not a valid file.")
